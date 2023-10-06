@@ -242,6 +242,7 @@ class Player(pygame.sprite.Sprite):
         self.fade_alpha = 0
 
     def update(self):
+        global scroll
         if not self.dead:
             dx = 0
             dy = 0
@@ -340,14 +341,15 @@ class Player(pygame.sprite.Sprite):
             for flag in flag_group:
                 if self.rect.colliderect(flag.rect):
                     global level
-                    if level < 5:
+                    if level < 0:
                         level += 1
                         world.loadLevel(level)
-                    elif level == 99 and self.victory == False:
+                    elif level == 5 and self.victory == False:
                         self.victory = True
                         self.img = player_idle_img
                         pygame.mixer.music.stop()
                         pygame.mixer.music.load("data/media/sound/rain then sunshine.mp3")
+                        pygame.mixer.music.set_volume(0.5)
                         pygame.mixer.music.play()
 
             self.rect.x += dx
@@ -356,7 +358,7 @@ class Player(pygame.sprite.Sprite):
             display.blit(pygame.transform.flip(self.img, self.flipped, False), (self.rect.x - scroll[0], self.rect.y - scroll[1], self.width, self.height))
 
             if self.victory:
-                scroll[1] -= 0.3
+                print(scroll[1])
                 fade = pygame.Surface((288, 162))
                 fade.fill((BLACK))
                 fade.set_alpha(self.fade_alpha)
@@ -582,12 +584,13 @@ def game():
             for element in group:
                 element.update()
 
-
         if player.rect.y < ((len(world.game_map) - 5) * 16): 
             scroll[0] +=  (player.rect.x - scroll[0] - 141) / 15
             scroll[1] += (player.rect.y - scroll[1] - 75) / 15
         elif player.rect.y > (len(world.game_map) * 16):
             world.loadLevel(level)
+        if player.victory:
+            scroll[1] -= 0.4
 
         if screen_shake:
             scroll[0] += random.randint(-3, 3)
@@ -745,7 +748,7 @@ def main_menu():
     pygame.mixer.music.set_volume(1)
     pygame.mixer.music.play(-1)
     global level
-    level = 99
+    level = 0
 
     i = 0
 
