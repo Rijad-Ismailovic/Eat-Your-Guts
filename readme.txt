@@ -5,7 +5,7 @@ tileset and the logic of multiple levels without the use of seperate functions f
 the level. Basically a OOP approach, of course. I added a level select because it is not my intention for somebody to miss out on content 
 because they cannot complete a level, I just want to show off my work.
 While creating this game i unknowingly set myself a lot of boundries which limited my development, such as the tileset being very small 
-which caused the character to be very small (10 * 8 pixels) which limited me a lot. Nevertheless, I learned a lot and will not make
+which caused the character to be very small (7 * 15 pixels) which limited me a lot. Nevertheless, I learned a lot and will not make
 the same mistakes in my next game, but rather I will make new mistakes! :D
 
 Explanation of the name: Up until the very end of this project, it was called "new_project". There were really no distinguishable 
