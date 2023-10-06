@@ -19,9 +19,9 @@ TILE_SIZE = 16
 GRAVITY = 0.15
 
 #COLORS
-COLOR_BG = (25, 42, 84)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+COLOR_BG = (25, 42, 84)
 #dobra background color: (14, 19, 25)
 
 #STUFF
@@ -82,15 +82,17 @@ flag_0_img = pygame.image.load("data/media/flag/0.png").convert_alpha()
 flag_1_img = pygame.image.load("data/media/flag/1.png").convert_alpha()
 flag_2_img = pygame.image.load("data/media/flag/2.png").convert_alpha()
 
-main_menu_img = pygame.image.load("data/media/ui/main menu.png")
-start_button_img = pygame.image.load("data/media/ui/start button.png")
-levelselect_button_img = pygame.image.load("data/media/ui/level select button.png")
-exit_button_img = pygame.image.load("data/media/ui/exit button.png")
-pointer_img = pygame.image.load("data/media/ui/pointer.png")
-level_select_img = pygame.image.load("data/media/ui/level select.png")
-pause_img = pygame.image.load("data/media/ui/pause.png")
-continue_button_img = pygame.image.load("data/media/ui/continue button.png")
-main_menu_button_img = pygame.image.load("data/media/ui/main menu button.png")
+main_menu_img = pygame.image.load("data/media/ui/main menu.png").convert_alpha()
+start_button_img = pygame.image.load("data/media/ui/start button.png").convert_alpha()
+levelselect_button_img = pygame.image.load("data/media/ui/level select button.png").convert_alpha()
+exit_button_img = pygame.image.load("data/media/ui/exit button.png").convert_alpha()
+pointer_img = pygame.image.load("data/media/ui/pointer.png").convert_alpha()
+level_select_img = pygame.image.load("data/media/ui/level select.png").convert_alpha()
+pause_img = pygame.image.load("data/media/ui/pause.png").convert_alpha()
+continue_button_img = pygame.image.load("data/media/ui/continue button.png").convert_alpha()
+main_menu_button_img = pygame.image.load("data/media/ui/main menu button.png").convert_alpha()
+end_img = pygame.image.load("data/media/ui/end.png").convert_alpha()
+end_img.set_alpha(0)
 
 #SOUNDS
 jump_sound = pygame.mixer.Sound("data/media/sound/jump.wav")
@@ -255,41 +257,43 @@ class Player(pygame.sprite.Sprite):
 
             #movement
             key = pygame.key.get_pressed()
-            if key[pygame.K_a] or key[pygame.K_LEFT]:
-                dx -= self.speed
-                self.flipped = True
-            if key[pygame.K_d] or key[pygame.K_RIGHT]:
-                dx += self.speed
-                self.flipped = False
-            if (key[pygame.K_w]  or key[pygame.K_UP]) and self.grounded:
-                self.vel_y -= 4
-                self.jumping = True
-                jump_sound.play()
-            elif (key[pygame.K_w] or key[pygame.K_UP]) and not self.grounded and self.jumping == False: #Note to future riki: Zasto dva uslova za skok? Prvi je za kad je na zemlji i skoci (Pocetni velocity 0 + 2), drugi je za kad vec pada (Pocetni velocity -2 + 6)
-                self.vel_y -= 6
-                self.jumping = True
-                cloud = PlayerCloud()
-                jump_sound.play()
-            if key[pygame.K_x] and self.shoot_cooldown <= 0:
-                bullet = Bullet(self, "player", self.flipped)
-                self.shoot_cooldown = 2 * FPS
-                shoot_sound.play()
-            self.shoot_cooldown -= 1
+            if not self.victory:
+                if key[pygame.K_a] or key[pygame.K_LEFT]:
+                    dx -= self.speed
+                    self.flipped = True
+                if key[pygame.K_d] or key[pygame.K_RIGHT]:
+                    dx += self.speed
+                    self.flipped = False
+                if (key[pygame.K_w]  or key[pygame.K_UP]) and self.grounded:
+                    self.vel_y -= 4
+                    self.jumping = True
+                    jump_sound.play()
+                elif (key[pygame.K_w] or key[pygame.K_UP]) and not self.grounded and self.jumping == False: #Note to future riki: Zasto dva uslova za skok? Prvi je za kad je na zemlji i skoci (Pocetni velocity 0 + 2), drugi je za kad vec pada (Pocetni velocity -2 + 6)
+                    self.vel_y -= 6
+                    self.jumping = True
+                    cloud = PlayerCloud()
+                    jump_sound.play()
+                if key[pygame.K_x] and self.shoot_cooldown <= 0:
+                    bullet = Bullet(self, "player", self.flipped)
+                    self.shoot_cooldown = 2 * FPS
+                    shoot_sound.play()
+                self.shoot_cooldown -= 1
 
             #animation
-            if not self.grounded:
-                self.img = player_jump_img
-            elif key[pygame.K_a] or key[pygame.K_d] or key[pygame.K_LEFT] or key[pygame.K_RIGHT]:
-                if self.running_timer % 7 == 0:
-                    if self.running_timer % 14 == 0:
-                        self.img = self.run_img[0]
-                        #run1_sound.play()
-                    else:                                   # idris was here.
-                        self.img = self.run_img[1]
-                        #run2_sound.play()
-                self.running_timer += 1
-            else:
-                self.img = player_idle_img
+            if not self.victory:
+                if not self.grounded:
+                    self.img = player_jump_img
+                elif key[pygame.K_a] or key[pygame.K_d] or key[pygame.K_LEFT] or key[pygame.K_RIGHT]:
+                    if self.running_timer % 7 == 0:
+                        if self.running_timer % 14 == 0:
+                            self.img = self.run_img[0]
+                            #run1_sound.play()
+                        else:                                   # idris was here.
+                            self.img = self.run_img[1]
+                            #run2_sound.play()
+                    self.running_timer += 1
+                else:
+                    self.img = player_idle_img
             
             #physics
             if not self.grounded:
@@ -339,22 +343,29 @@ class Player(pygame.sprite.Sprite):
                     if level < 5:
                         level += 1
                         world.loadLevel(level)
-                    else:
-                        player.victory = True
+                    elif level == 99 and self.victory == False:
+                        self.victory = True
+                        self.img = player_idle_img
+                        pygame.mixer.music.stop()
+                        pygame.mixer.music.load("data/media/sound/rain then sunshine.mp3")
+                        pygame.mixer.music.play()
 
             self.rect.x += dx
             self.rect.y += dy
 
             display.blit(pygame.transform.flip(self.img, self.flipped, False), (self.rect.x - scroll[0], self.rect.y - scroll[1], self.width, self.height))
 
-            if player.victory:
+            if self.victory:
+                scroll[1] -= 0.3
                 fade = pygame.Surface((288, 162))
                 fade.fill((BLACK))
                 fade.set_alpha(self.fade_alpha)
-                self.fade_alpha += 1
+                self.fade_alpha += 0.7
                 display.blit(fade, (0, 0))
+                if fade.get_alpha() == 255:
+                    end_img.set_alpha(end_img.get_alpha() + 2)
+                    display.blit(end_img, (0, 0))
 
-            
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, mode):
@@ -597,6 +608,7 @@ def game():
         clock.tick(FPS)
 
 def pause(screenshot):
+    pygame.mixer.music.set_volume(0.2)
     pause_sound.play()
     i = 0
 
@@ -611,6 +623,8 @@ def pause(screenshot):
     while run:
         display.blit(screenshot, (0, 0))
         display.blit(dim, (0, 0))
+        if player.victory == True:
+            pygame.draw.rect(display, BLACK, (0, 0, 288, 162))
         display.blit(pause_img, (0, 0))
 
         if i == 0:
@@ -637,6 +651,7 @@ def pause(screenshot):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     resume_sound.play()
+                    pygame.mixer.music.set_volume(1)
                     run = False
 
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
@@ -727,9 +742,10 @@ def level_select():
 
 def main_menu():
     pygame.mixer.music.load("data/media/sound/a lonely cherry tree.mp3")
+    pygame.mixer.music.set_volume(1)
     pygame.mixer.music.play(-1)
     global level
-    level = 0
+    level = 99
 
     i = 0
 
