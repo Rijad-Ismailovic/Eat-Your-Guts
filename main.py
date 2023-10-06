@@ -9,7 +9,9 @@ clock = pygame.time.Clock()
 WINDOW_SIZE = (1300, 800)
 DISPLAY_SIZE = (288, 162)
 screen = pygame.display.set_mode(WINDOW_SIZE)
-display = pygame.Surface((288, 162))
+display = pygame.Surface((288, 162))    
+pygame.display.set_caption("Eat Your Guts")
+pygame.display.set_icon(pygame.image.load("data/media/misc/icon.png"))
 
 #CONSTS
 FPS = 60
@@ -23,7 +25,7 @@ WHITE = (255, 255, 255)
 #dobra background color: (14, 19, 25)
 
 #STUFF
-level = 3
+level = 0
 scroll = [0, 0]
 screen_shake = 0
 player_group = pygame.sprite.Group()
@@ -33,7 +35,7 @@ bullet_group = pygame.sprite.Group()
 playercloud_group = pygame.sprite.Group()
 flag_group = pygame.sprite.Group()
 bg_group = pygame.sprite.Group()
-group_group = [bg_group, player_group, enemy_group, ragdoll_group, bullet_group, playercloud_group, flag_group]
+group_group = [bg_group, enemy_group, ragdoll_group, bullet_group, playercloud_group, flag_group, player_group]
 
 #IMAGES
 tile_topleft_img = pygame.image.load("data/media/tiles/tile_topleft.png").convert_alpha()
@@ -62,6 +64,7 @@ cave_bg_right_img =pygame.image.load("data/media/tiles/cave_bg_right.png").conve
 cave_bg_img =pygame.image.load("data/media/tiles/cave_bg.png").convert_alpha()
 cave_bg_skull_img =pygame.image.load("data/media/tiles/cave_bg_skull.png").convert_alpha()
 cave_bg_bones_img = pygame.image.load("data/media/tiles/cave_bg_bones.png").convert_alpha()
+stars_img = pygame.image.load("data/media/misc/stars.png")
 
 player_idle_img = pygame.image.load("data/media/characters/player/idle.png").convert_alpha()
 player_jump_img = pygame.image.load("data/media/characters/player/jump.png").convert_alpha()
@@ -79,20 +82,34 @@ flag_0_img = pygame.image.load("data/media/flag/0.png").convert_alpha()
 flag_1_img = pygame.image.load("data/media/flag/1.png").convert_alpha()
 flag_2_img = pygame.image.load("data/media/flag/2.png").convert_alpha()
 
-test_img = pygame.image.load("data/media/test.png")
+main_menu_img = pygame.image.load("data/media/ui/main menu.png")
+start_button_img = pygame.image.load("data/media/ui/start button.png")
+levelselect_button_img = pygame.image.load("data/media/ui/level select button.png")
+exit_button_img = pygame.image.load("data/media/ui/exit button.png")
+pointer_img = pygame.image.load("data/media/ui/pointer.png")
+level_select_img = pygame.image.load("data/media/ui/level select.png")
+pause_img = pygame.image.load("data/media/ui/pause.png")
+continue_button_img = pygame.image.load("data/media/ui/continue button.png")
+main_menu_button_img = pygame.image.load("data/media/ui/main menu button.png")
 
 #SOUNDS
-#run1_sound = pygame.mixer.Sound('data/media/sound/run1.wav')
-#run2_sound = pygame.mixer.Sound('data/media/sound/run2.wav')
-jump_sound = pygame.mixer.Sound('data/media/sound/jump.wav')
-shoot_sound = pygame.mixer.Sound('data/media/sound/shoot.wav')
-player_death_sound = pygame.mixer.Sound('data/media/sound/player_death.wav')
-enemy_death_sound = pygame.mixer.Sound('data/media/sound/enemy_death.wav')
+jump_sound = pygame.mixer.Sound("data/media/sound/jump.wav")
+shoot_sound = pygame.mixer.Sound("data/media/sound/shoot.wav")
+player_death_sound = pygame.mixer.Sound("data/media/sound/player_death.wav")
+enemy_death_sound = pygame.mixer.Sound("data/media/sound/enemy_death.wav")
+pause_sound = pygame.mixer.Sound("data/media/sound/pause.wav")
+resume_sound = pygame.mixer.Sound("data/media/sound/resume.wav")
+menu_selection_sound = pygame.mixer.Sound("data/media/sound/menu selection.wav")
+confirm_sound = pygame.mixer.Sound("data/media/sound/confirm.wav")
 
-jump_sound.set_volume(0.02)
+jump_sound.set_volume(0.04)
 shoot_sound.set_volume(0.15)
 player_death_sound.set_volume(0.15)
 enemy_death_sound.set_volume(0.15)
+pause_sound.set_volume(0.15)
+resume_sound.set_volume(0.15)
+menu_selection_sound.set_volume(0.15)
+confirm_sound.set_volume(0.15)
 
 
 
@@ -117,7 +134,6 @@ class World:
         for row in data:
             self.game_map.append(row.split(','))
 
-    
         #assigning tile properties
         self.tiles = []  #[type, img, xy_coords, rect]              
         y = 0
@@ -188,9 +204,8 @@ class World:
                 x += 1
             y += 1
 
-
     def draw(self):
-        display.blit(test_img, (-550 - scroll[0] * 0.1, -900 - scroll[1] * 0.05))
+        display.blit(stars_img, (-550 - scroll[0] * 0.1, -930 - scroll[1] * 0.05))
         for tile in self.tiles:
             if tile[0] == "background":
                 display.blit(tile[1], (tile[2][0] - scroll[0], tile[2][1] - scroll[1]))
@@ -221,6 +236,8 @@ class Player(pygame.sprite.Sprite):
         self.running_timer = 0
         self.shoot_cooldown = 2
         self.dead = False
+        self.victory = False
+        self.fade_alpha = 0
 
     def update(self):
         if not self.dead:
@@ -238,17 +255,17 @@ class Player(pygame.sprite.Sprite):
 
             #movement
             key = pygame.key.get_pressed()
-            if key[pygame.K_a]:
+            if key[pygame.K_a] or key[pygame.K_LEFT]:
                 dx -= self.speed
                 self.flipped = True
-            if key[pygame.K_d]:
+            if key[pygame.K_d] or key[pygame.K_RIGHT]:
                 dx += self.speed
                 self.flipped = False
-            if key[pygame.K_w] and self.grounded:
+            if (key[pygame.K_w]  or key[pygame.K_UP]) and self.grounded:
                 self.vel_y -= 4
                 self.jumping = True
                 jump_sound.play()
-            elif key[pygame.K_w] and not self.grounded and self.jumping == False: #Note to future riki: Zasto dva uslova za skok? Prvi je za kad je na zemlji i skoci (Pocetni velocity 0 + 2), drugi je za kad vec pada (Pocetni velocity -2 + 6)
+            elif (key[pygame.K_w] or key[pygame.K_UP]) and not self.grounded and self.jumping == False: #Note to future riki: Zasto dva uslova za skok? Prvi je za kad je na zemlji i skoci (Pocetni velocity 0 + 2), drugi je za kad vec pada (Pocetni velocity -2 + 6)
                 self.vel_y -= 6
                 self.jumping = True
                 cloud = PlayerCloud()
@@ -262,12 +279,12 @@ class Player(pygame.sprite.Sprite):
             #animation
             if not self.grounded:
                 self.img = player_jump_img
-            elif key[pygame.K_a] or key[pygame.K_d]:
+            elif key[pygame.K_a] or key[pygame.K_d] or key[pygame.K_LEFT] or key[pygame.K_RIGHT]:
                 if self.running_timer % 7 == 0:
                     if self.running_timer % 14 == 0:
                         self.img = self.run_img[0]
                         #run1_sound.play()
-                    else:
+                    else:                                   # idris was here.
                         self.img = self.run_img[1]
                         #run2_sound.play()
                 self.running_timer += 1
@@ -319,13 +336,24 @@ class Player(pygame.sprite.Sprite):
             for flag in flag_group:
                 if self.rect.colliderect(flag.rect):
                     global level
-                    level += 1
-                    world.loadLevel(level)
+                    if level < 5:
+                        level += 1
+                        world.loadLevel(level)
+                    else:
+                        player.victory = True
 
             self.rect.x += dx
             self.rect.y += dy
 
             display.blit(pygame.transform.flip(self.img, self.flipped, False), (self.rect.x - scroll[0], self.rect.y - scroll[1], self.width, self.height))
+
+            if player.victory:
+                fade = pygame.Surface((288, 162))
+                fade.fill((BLACK))
+                fade.set_alpha(self.fade_alpha)
+                self.fade_alpha += 1
+                display.blit(fade, (0, 0))
+
             
 
 class Enemy(pygame.sprite.Sprite):
@@ -474,7 +502,7 @@ class PlayerCloud(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, playercloud_group)
         self.x = player.rect.x + 4
         self.y = player.rect.y + 12
-        self.img = pygame.image.load("data/media/cloud.png").convert_alpha()
+        self.img = pygame.image.load("data/media/misc/cloud.png").convert_alpha()
         self.rect = self.img.get_rect(center = (self.x, self.y))
 
     def update(self):
@@ -528,24 +556,11 @@ class Flag(pygame.sprite.Sprite):
             self.img_timer = 10
 
         display.blit(self.img[self.index], (self.rect.x - scroll[0], self.rect.y - scroll[1], self.width, self.height))
-
-class BgObject(pygame.sprite.Sprite):
-    def __init__(self, x, y, img, parallax):
-        pygame.sprite.Sprite.__init__(self, bg_group)
-        self.x = x
-        self.y = y
-        self.img = img
-        self.rect = self.img.get_rect(topleft = (self.x, self.y))
-        self.width = self.img.get_width()
-        self.height = self.img.get_height()
-        self.parallax = parallax
-
-    def update(self):
-        self.rect = (self.x - scroll[0] * self.parallax, self.y, self.width, self.height)
-        display.blit(self.img, self.rect)
                 
 
-def main():
+def game():
+    pygame.mixer.music.load("data/media/sound/hello its me.mp3")
+    pygame.mixer.music.play(-1)
     global world, screen_shake
     world = World()
     while True:
@@ -574,12 +589,208 @@ def main():
                 sys.exit() 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+                    pause(display.copy())
 
         surf = pygame.transform.scale(display, WINDOW_SIZE)
         screen.blit(surf, (0, 0))
         pygame.display.update()
         clock.tick(FPS)
 
-main()
+def pause(screenshot):
+    pause_sound.play()
+    i = 0
+
+    dim = pygame.Surface((288, 162))
+    dim.set_alpha(100)
+
+    fade = pygame.Surface((288, 162))
+    fade.set_alpha(0)
+    fade_flag = False
+
+    run = True
+    while run:
+        display.blit(screenshot, (0, 0))
+        display.blit(dim, (0, 0))
+        display.blit(pause_img, (0, 0))
+
+        if i == 0:
+            display.blit(continue_button_img, (113, 54))
+            display.blit(pointer_img, (100, 56))
+        elif i == 1:
+            display.blit(main_menu_button_img, (111, 74))
+            display.blit(pointer_img, (98, 76))
+        else:
+            display.blit(exit_button_img, (129, 94))
+            display.blit(pointer_img, (116, 96))
+
+        if fade_flag:
+            pygame.mixer.music.fadeout(1100)
+            fade.set_alpha(fade.get_alpha() + 4)
+            display.blit(fade, (0, 0))
+            if fade.get_alpha() == 255:
+                main_menu()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit() 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    resume_sound.play()
+                    run = False
+
+                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    if i + 1 <= 2:
+                        i += 1
+                        menu_selection_sound.play()
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    if i - 1 >= 0:
+                        i -= 1
+                        menu_selection_sound.play()
+
+                if event.key == pygame.K_RETURN:
+                    if i == 0:
+                        resume_sound.play()
+                        run = False
+                    elif i == 1:
+                        fade_flag = True
+                    else:
+                        pygame.quit()
+                        sys.exit()
+
+        surf = pygame.transform.scale(display, WINDOW_SIZE)
+        screen.blit(surf, (0, 0))
+        pygame.display.update()
+        clock.tick(FPS)
+
+def level_select():
+    global level
+    i = 0
+    j = 0
+    
+    select_border = [[(28, 28, 69, 44), (109, 28, 69, 44), (190, 28, 69, 44)],
+                     [(28, 90, 69, 44), (109, 90, 69, 44), (190, 90, 69, 44)]]
+    select_level = [[0, 1, 2],
+                    [3, 4, 5]]
+
+    fade = pygame.Surface((288, 162))
+    fade.set_alpha(0)
+    fade_flag = False
+
+    run = True
+    while run:
+        display.blit(level_select_img, (0, 0))
+        pygame.draw.rect(display , (15, 122, 80), select_border[j][i], 2)
+
+        if fade_flag:
+            pygame.mixer.music.fadeout(1100)
+            fade.set_alpha(fade.get_alpha() + 4)
+            display.blit(fade, (0, 0))
+            if fade.get_alpha() == 255:
+                level = select_level[j][i]
+                game()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit() 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    confirm_sound.play()
+                    run = False
+
+                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    if j + 1 <= 1:
+                        j += 1
+                        menu_selection_sound.play()
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    if j - 1 >= 0:
+                        j -= 1
+                        menu_selection_sound.play()
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    if i + 1 <= 2:
+                        i += 1
+                        menu_selection_sound.play()
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    if i - 1 >= 0:
+                        i -= 1
+                        menu_selection_sound.play()
+
+                if event.key == pygame.K_RETURN:
+                    fade_flag = True
+                    confirm_sound.play()
+
+        surf = pygame.transform.scale(display, WINDOW_SIZE)
+        screen.blit(surf, (0, 0))
+        pygame.display.update()
+        clock.tick(FPS)
+
+def main_menu():
+    pygame.mixer.music.load("data/media/sound/a lonely cherry tree.mp3")
+    pygame.mixer.music.play(-1)
+    global level
+    level = 0
+
+    i = 0
+
+    fade = pygame.Surface((288, 162))
+    fade.set_alpha(0)
+    fade_flag = False
+
+    while True:
+        display.blit(main_menu_img, (0, 0))
+
+        if i == 0:
+            display.blit(start_button_img, (123, 76))
+            display.blit(pointer_img, (110, 78))
+        elif i == 1:
+            display.blit(levelselect_button_img, (97, 96))
+            display.blit(pointer_img, (84, 98))
+        else:
+            display.blit(exit_button_img, (129, 116))
+            display.blit(pointer_img, (116, 118))
+
+        if fade_flag:
+            pygame.mixer.music.fadeout(1100)
+            fade.set_alpha(fade.get_alpha() + 4)
+            display.blit(fade, (0, 0))
+            if fade.get_alpha() == 255:
+                game()
+
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit() 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                    if i + 1 <= 2:
+                        i += 1
+                        menu_selection_sound.play()
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
+                    if i - 1 >= 0:
+                        i -= 1
+                        menu_selection_sound.play()
+
+                if event.key == pygame.K_RETURN:
+                    if i == 0:
+                        fade_flag = True
+                        confirm_sound.play()
+                    elif i == 1:
+                        confirm_sound.play()
+                        level_select()
+                    else:
+                        pygame.quit()
+                        sys.exit()
+
+        surf = pygame.transform.scale(display, WINDOW_SIZE)
+        screen.blit(surf, (0, 0))
+        pygame.display.update()
+        clock.tick(FPS)
+
+main_menu()
+
