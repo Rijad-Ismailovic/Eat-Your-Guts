@@ -5,6 +5,6 @@ While creating this game i unknowingly set myself a lot of boundries which limit
 
 Explanation of the name: Up until the very end of this project, it was called "new_project". There were really no distinguishable characteristics that would help me name this game. It a simple and generic platformer But when my friends play-tested it, one of them said that I should name it "Eat your guts" because you want to eat yourself while you play it (Bosnian: "Trebao bi je nazvati "Eat you guts"jer želis da je pojedeš dok je igraš koliko umireš).
 
-To play the game, run the "Eat Your Guts.lnk". I made it a shortcut for ease of use.
-
+To play the game, go into the "dist" folder and run main.exe. 
+Windows may detect it as a virus because Windows flags programs made with PyInstaller as a virus as a result of many people making viruses with PyInstaller.
 Enjoy !!
