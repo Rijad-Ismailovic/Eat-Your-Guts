@@ -1,5 +1,6 @@
-# Ignore everything
+# Ignore all files
 *
 
-# Except Python files
+# Except Python files and directories
 !*.py
+!*/
