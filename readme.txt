@@ -12,7 +12,7 @@ Enjoy !!
 
 GAME SCREENSHOTS:
 https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg1.png?raw=true
-https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg2.png?raw=true
+https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg.png?raw=true
 https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg3.png?raw=true
 
 
