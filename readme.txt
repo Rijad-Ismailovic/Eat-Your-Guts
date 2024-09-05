@@ -7,4 +7,12 @@ Explanation of the name: Up until the very end of this project, it was called "n
 
 To play the game, go into the "dist" folder and run main.exe. 
 Windows may detect it as a virus because Windows flags programs made with PyInstaller as a virus as a result of many people making viruses with PyInstaller.
+
 Enjoy !!
+
+GAME SCREENSHOTS:
+https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg1.png?raw=true
+https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg2.png?raw=true
+https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg3.png?raw=true
+
+
