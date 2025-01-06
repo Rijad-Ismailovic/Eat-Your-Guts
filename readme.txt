@@ -15,4 +15,8 @@ https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg1
 https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg.png?raw=true
 https://github.com/Rijad-Ismailovic/Eat-Your-Guts/blob/main/data/media/misc/eyg3.png?raw=true
 
+![Main Menu](data/media/misc/eyg1.png)
+![Game](data/media/misc/eyg3.png)
+![Level Select](data/media/misc/eyg.png)
+
 
